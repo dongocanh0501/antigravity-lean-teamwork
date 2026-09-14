@@ -78,15 +78,21 @@ class TeamworkGlassPopover:
         )
         user32.RegisterClassW(c.byref(wc))
 
-        ex_style = 0x00080000 | 0x00000080 | 0x00000008  # WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_TOPMOST
+        # Owned, non-topmost popup: it stays with the widget and never covers
+        # another foreground application.
+        ex_style = 0x00080000 | 0x00000080  # WS_EX_LAYERED | WS_EX_TOOLWINDOW
+        parent_hwnd = getattr(self.parent, 'hwnd', None) if self.parent else None
         self.hwnd = user32.CreateWindowExW(
             ex_style,
             'TeamworkGlassPopoverV2',
             'LeanTeamworkGlassPopover',
-            0x80000000 | 0x10000000,  # WS_POPUP | WS_VISIBLE
+            0x80000000,  # WS_POPUP; shown only by an explicit chip click.
             0, 0, self.w, self.h,
-            None, None, hinst, None
+            parent_hwnd, None, hinst, None
         )
+        # Defensive demotion: this panel must never become system-topmost
+        if self.hwnd:
+            user32.SetWindowPos(self.hwnd, c.c_void_p(-2), 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010)
 
     def contains_point(self, sx, sy):
         if not self.visible or not self.hwnd:
@@ -227,7 +233,7 @@ class TeamworkGlassPopover:
         self.pos_x = max(work_left + 10, min(pos_x, work_right - self.w - 10))
         self.pos_y = max(work_top + 10, min(pos_y, work_bottom - self.h - 10))
 
-        user32.SetWindowPos(self.hwnd, -1, self.pos_x, self.pos_y, self.w, self.h, 0x0040 | 0x0010)
+        user32.SetWindowPos(self.hwnd, 0, self.pos_x, self.pos_y, self.w, self.h, 0x0040 | 0x0010)
 
     def show(self, target_rect):
         now = time.monotonic()

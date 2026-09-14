@@ -1767,7 +1767,8 @@ class CockpitOverlayApp:
                 tw_updated_at = tw_info.get('updated_at', 0.0)
                 last_tw_updated_at = getattr(self, '_last_tw_updated_at', 0.0)
 
-                # Auto-popup when a new proposal or acceptance arrives from Antigravity IDE
+                # Do not auto-popup: status updates smoothly on the Teamwork chip.
+                # The detailed popover is only opened when the user explicitly clicks the chip.
                 has_pending_response = bool(self.teamwork_service and self.teamwork_service.get_state().get('response'))
                 is_new_event = (current_tw_st in ('PROPOSAL', 'ACCEPTANCE')) and not has_pending_response and (
                     current_tw_st != last_tw_st or tw_updated_at > last_tw_updated_at
@@ -1776,26 +1777,8 @@ class CockpitOverlayApp:
                     self._last_tw_status = current_tw_st
                     self._last_tw_updated_at = tw_updated_at
                     self._proposal_auto_handled = False
-                    if self.teamwork_popover:
-                        chip_rect = None
-                        if user32.IsWindowVisible(hwnd):
-                            for z_id, zx, zy, zw, zh in self.zones:
-                                if z_id == 'teamwork':
-                                    wrect = w.RECT()
-                                    user32.GetWindowRect(hwnd, c.byref(wrect))
-                                    chip_rect = (wrect.left + zx, wrect.top + zy, wrect.left + zx + zw, wrect.top + zy + zh)
-                                    break
-                        if not chip_rect:
-                            rc_work = w.RECT()
-                            user32.SystemParametersInfoW(0x0030, 0, c.byref(rc_work), 0)
-                            chip_rect = (rc_work.right - 260, rc_work.top + 40, rc_work.right - 40, rc_work.top + 72)
-
-                        self.teamwork_popover.show(chip_rect)
-                        if current_tw_st == 'PROPOSAL':
-                            rem_sec = max(5, tw_info.get('remaining_seconds', 150))
-                            self.popover_until = time.monotonic() + rem_sec + 5.0
-                        else:
-                            self.popover_until = time.monotonic() + 86400.0
+                    # Proposal state remains active, but its panel is opened
+                    # only by an explicit click on the Teamwork chip.
                 elif current_tw_st in ('IDLE', 'EXECUTING') and last_tw_st not in ('IDLE', 'EXECUTING'):
                     self._last_tw_status = current_tw_st
                     if self.teamwork_popover and self.teamwork_popover.visible:
