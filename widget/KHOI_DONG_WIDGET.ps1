@@ -21,7 +21,7 @@ public static class AntigravityWidgetCloser {
   [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 }
 '@
-foreach ($cls in @('AntigravityQuotaWidgetV10Pro', 'CockpitQuotaWidgetV10Pro', 'CockpitQuotaWidgetV9')) {
+foreach ($cls in @('AntigravityQuotaWidgetV10Pro')) {
   for ($i = 0; $i -lt 10; $i++) {
     $wnd = [AntigravityWidgetCloser]::FindWindow($cls, $null)
     if ($wnd -eq [IntPtr]::Zero) { break }
@@ -30,8 +30,11 @@ foreach ($cls in @('AntigravityQuotaWidgetV10Pro', 'CockpitQuotaWidgetV10Pro', '
   }
 }
 
-# Đảm bảo tiến trình python main.py cũ kết thúc hoàn toàn để giải phóng Mutex
-Get-CimInstance Win32_Process -Filter "CommandLine like '%main.py%'" | ForEach-Object {
+# Chỉ đóng tiến trình Python thuộc riêng AntigravityWidget để giải phóng Mutex, tuyệt đối không chạm vào Codex/Cockpit
+$escapedDir = [regex]::Escape($projectDir)
+Get-CimInstance Win32_Process -Filter "Name like 'python%'" | Where-Object {
+  $_.CommandLine -and ($_.CommandLine -match $escapedDir)
+} | ForEach-Object {
   Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
 }
 Start-Sleep -Milliseconds 300
