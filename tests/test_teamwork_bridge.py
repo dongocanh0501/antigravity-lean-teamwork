@@ -305,9 +305,53 @@ class TestTeamworkWidgetIntegration(unittest.TestCase):
         self.assertEqual(state["response"]["action"], "ACCEPT")
         self.assertFalse(state["response"]["handled"])
 
+    def test_14_proposal_cli_and_wait_listener(self):
+        """Test cơ chế phát đề xuất qua bridge CLI và script wait_for_proposal_choice.py tự tiếp tục khi timeout hoặc click widget."""
+        import subprocess
+
+        # 1. Test bridge CLI proposal
+        cli_py = REPO_ROOT / "scripts" / "teamwork_bridge.py"
+        res_p = subprocess.run([
+            sys.executable, str(cli_py), "proposal", "Kế hoạch Refactor",
+            "--options", '[{"id": 1, "text": "Phương án 1", "recommended": true}, {"id": 2, "text": "Phương án 2"}]',
+            "--duration", "10"
+        ], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(res_p.returncode, 0)
+        st = teamwork_bridge.get_bridge_state()
+        self.assertEqual(st["status"], "PROPOSAL")
+        self.assertEqual(st["proposal"]["title"], "Kế hoạch Refactor")
+
+        # 2. Test wait_for_proposal_choice.py timeout fallback (1s) -> tự động chọn [1]
+        listener_py = REPO_ROOT / "scripts" / "wait_for_proposal_choice.py"
+        self.assertTrue(listener_py.exists())
+
+        res_t = subprocess.run([
+            sys.executable, str(listener_py), "--timeout", "1", "--interval", "0.2"
+        ], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(res_t.returncode, 0)
+        self.assertIn("[TIMEOUT]", res_t.stdout)
+        self.assertIn("Phương án [1]", res_t.stdout)
+
+        # 3. Test wait_for_proposal_choice.py với sự kiện chọn phương án [2] từ widget
+        teamwork_bridge.publish_proposal("Test Selection", [
+            {"id": 1, "text": "Opt 1"}, {"id": 2, "text": "Opt 2"}
+        ], duration_seconds=10)
+
+        p = subprocess.Popen(
+            [sys.executable, str(listener_py), "--timeout", "5", "--interval", "0.2"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8"
+        )
+        time.sleep(0.6)
+        teamwork_bridge.submit_user_response("SELECT_OPTION", selected_option_id=2, note="User chose 2 on widget")
+        out, _ = p.communicate(timeout=5)
+        self.assertEqual(p.returncode, 0)
+        self.assertIn("[WIDGET_SELECTION]", out)
+        self.assertIn("Phương án [2]", out)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

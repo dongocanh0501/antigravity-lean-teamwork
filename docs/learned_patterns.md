@@ -298,3 +298,16 @@ Tài liệu này là nơi lưu trữ các tri thức kỹ thuật, mẫu sửa l
     2. **Khối Design DNA Siêu Tinh Gọn (~150 Tokens)**: Chuẩn hóa khối thẻ `<UI_UX_DESIGN_DNA>` chứa đầy đủ các thông số thẩm mỹ đã được người dùng gật đầu chấp thuận. Khi bước vào tác vụ UI/UX, chỉ nạp đúng khối này (hoặc chạy `py scripts/manage_skills.py --dna`) giúp AI thiết kế chuẩn gu 100% ngay từ Turn 1 (First-Time Right UI).
     3. **Tự Động Trích Xuất & Tiến Hóa Khi Nghiệm Thu**: Khi hoàn tất giao diện và người dùng bấm nghiệm thu `💎 [100% HOÀN TẤT] ✨`, Agent tự động trích xuất các điều chỉnh thẩm mỹ mới nhất để cập nhật vào Taste Profile, đảm bảo hệ thống tự hoàn thiện và đồng điệu tuyệt đối với người dùng qua thời gian.
   - *Lệnh test*: `py scripts/manage_skills.py --dna` & `py tests/test_skill_integrity.py` -> 100% PASS (Exit code 0).
+
+## Mẫu 26: [Zero-Block Chat & Widget Decoupling] Khử Bỏ Hoàn Toàn Popup Modal Trong Chat & Tự Động Tiếp Tục Khi Hết Giờ (v1.5.15)
+- **[Zero-Block Chat & Widget Decoupling] [Eliminate Blocking ask_question & Auto-Continue Proposal Timeout]**:
+  - *Nguyên nhân gốc*:
+    1. **Đóng Băng Phiên Làm Việc Bởi Modal `ask_question`**: Quy tắc cũ trong `GEMINI.md` bắt buộc AI gọi modal công cụ `ask_question` khi đưa ra đề xuất kỹ thuật. Trong kiến trúc IDE Antigravity, `ask_question` hiển thị một popup tương tác và **chặn đứng 100% việc thực thi của Agent** cho đến khi người dùng nhấn nút Submit trên modal.
+    2. **Hết Giờ Không Thể Tự Tiếp Tục**: Dù đồng hồ hoặc hướng dẫn có ghi hạn 2.5 phút tự động tiếp tục, việc bị `ask_question` đóng băng khiến Agent không thể nhận sự kiện timeout, dẫn đến việc người dùng dù chờ hết giờ thì phiên làm việc vẫn bị treo cứng (không thể tự động thực hiện phương án 1).
+    3. **Che Khuất Màn Hình & Trải Nghiệm Khung Chat Bị Khóa**: Modal popup bật lên che phủ giao diện chat, tước đi khả năng đọc lại lịch sử trao đổi của người dùng.
+  - *Giải pháp tối thiểu*:
+    1. **Khử Bỏ 100% Modal Popup `ask_question` Trong Chat**: Cập nhật toàn bộ các tệp `GEMINI.md` (hệ thống, workspace, config) và `SKILL.md`: Cấm tuyệt đối việc gọi công cụ `ask_question` cho đề xuất kỹ thuật.
+    2. **Chỉ Hiển Thị Đề Xuất Dạng Lịch Sử Markdown**: Trong khung chat, AI chỉ in đề xuất ra dưới dạng tin nhắn Markdown thông thường kèm đánh số `[1] (Khuyên dùng) ⭐`, `[2]`... Giữ khung chat hoàn toàn sạch sẽ, rảnh rang và thoáng đãng để người dùng theo dõi.
+    3. **Chuyển Toàn Bộ Khâu Chọn Sang Desktop Widget Popover HUD**: AI gọi `teamwork_bridge.publish_proposal(title, options, 150)`. Desktop Widget bung Popover HUD trực quan với đồng hồ đếm ngược Spectrum và các nút bấm phương án để người dùng chọn trực tiếp.
+    4. **Tự Động Tiếp Tục Bằng Background Listener & Timeout Fallback**: Khởi chạy script lắng nghe ngầm `py scripts/wait_for_proposal_choice.py --timeout 150` (hoặc `schedule(DurationSeconds=150, TimerCondition="any")`). Nếu người dùng bấm chọn trên Widget, script bắt ngay lập tức và đánh thức Agent; nếu hết 150s mà không có tương tác, script tự động chọn Phương án [1] và đánh thức Agent tiếp tục thực thi ngay lập tức, triệt tiêu hoàn toàn tình trạng treo phiên.
+  - *Lệnh test*: `py -m unittest discover -s tests` & `py tests/test_skill_integrity.py` -> 14/14 PASS (Exit code 0).

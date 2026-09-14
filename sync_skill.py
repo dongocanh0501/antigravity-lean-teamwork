@@ -133,6 +133,17 @@ def ensure_stock_gemini():
         gf.parent.mkdir(parents=True, exist_ok=True)
         if gf.exists():
             txt = gf.read_text(encoding="utf-8")
+            if "BẮT BUỘC dùng modal ask_question" in txt:
+                old_rule = (
+                    "1. 🧭 **[CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡**: Khi mở đầu bất kỳ tác vụ nào hoặc đứng trước ngã rẽ giải pháp, BẮT BUỘC dùng modal ask_question với tiền tố tiêu đề 🧭 [ĐỀ XUẤT KỸ THUẬT] ⏱️ [HẠN CHỐT: HH:MM:SS] 💡 kèm ảnh đồng hồ đếm ngược 7 màu macOS Spectrum trong suốt bằng đường dẫn tuyệt đối dạng `![🧭 ĐỀ XUẤT KỸ THUẬT 💡](C:/Users/tient/.gemini/antigravity/brain/<conv_id>/technical_proposal_timer.svg)` (được hook cấp sẵn đường dẫn chính xác trong thông điệp Re-Anchor, CẤM dùng đường dẫn tương đối làm gãy ảnh, CẤM tự vẽ lại SVG nền đen `#0D1117`). Cung cấp 2–4 lựa chọn kèm (Recommended). Hạn 2.5 phút tự động chọn hướng tối ưu; nếu người dùng chọn ô 3 (nhập riêng) thì tự động tạm dừng đồng hồ chờ người dùng 100%.\n"
+                    "  2. 💎 **[CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Tách Nhịp 2 Bước)**: Sau khi hoàn thành code và test pass, BẮT BUỘC tuân thủ: BƯỚC 1 in toàn văn Báo cáo & Hướng dẫn đối chứng ra màn hình, cấm bật modal che chữ; BƯỚC 2 kích hoạt modal 💎 [NGHIỆM THU HOÀN THIỆN] (100% Hoàn Tất vs Superpowers Debug) treo cố định chờ người dùng đối chứng."
+                )
+                new_rule = (
+                    "1. 🧭 **[CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡 (Hiển Thị Chat Lịch Sử + Chọn Trên Widget HUD + Hết Giờ Tự Động Tiếp Tục)**: Khi mở đầu hoặc chọn giải pháp kỹ thuật: BỎ HOÀN TOÀN modal popup `ask_question` trên chat Antigravity (giải phóng khung chat 100%, TUYỆT ĐỐI KHÔNG gọi modal `ask_question`). In đề xuất ra lịch sử chat thông thường dạng markdown để người dùng theo dõi kèm đánh số `[1] (Khuyên dùng) ⭐`, `[2]`... Đồng thời phát đề xuất lên Desktop Widget HUD Popover (`teamwork_bridge.publish_proposal`). Người dùng chọn đề xuất trực tiếp trên Widget (hoặc gõ số vào chat). Hết hạn 2.5 phút (150s), hệ thống TỰ ĐỘNG KÍCH HOẠT PHƯƠNG ÁN [1] (Khuyên dùng) VÀ TIẾP TỤC THỰC THI NGAY LẬP TỨC, không bao giờ bị dừng phiên.\n"
+                    "  2. 💎 **[CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Hiển Thị Chat + Treo Cố Định Widget HUD)**: Sau khi hoàn thành code và test pass (exit 0), BẮT BUỘC tuân thủ: BƯỚC 1 in toàn văn Báo cáo & Hướng dẫn đối chứng ra màn hình chat (TUYỆT ĐỐI KHÔNG gọi modal popup `ask_question` che chữ); BƯỚC 2 gọi `teamwork_bridge.publish_acceptance(...)` để treo bảng nghiệm thu cố định trên Desktop Widget Popover (`[100% HOÀN TẤT] ✨` / `[SUPERPOWERS DEBUG] 🛠️`). Khung chat rảnh rang 100%, người dùng xác nhận trên Desktop Widget hoặc chat `OK 💎` / `ok::`."
+                )
+                txt = txt.replace(old_rule, new_rule)
+                gf.write_text(txt, encoding="utf-8")
             if "Lean Teamwork Protocol" not in txt:
                 txt = txt.strip() + "\n" + lean_gate_ref
                 gf.write_text(txt, encoding="utf-8")

@@ -264,3 +264,69 @@ def clear_bridge(status: str = "IDLE") -> bool:
         "intermediate_issues": []
     }
     return write_bridge_state(state)
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Lean Teamwork Bridge CLI")
+    sub = parser.add_subparsers(dest="command", help="Lệnh cần thực hiện")
+
+    # proposal
+    p_cmd = sub.add_parser("proposal", help="Phát đề xuất kỹ thuật lên Widget")
+    p_cmd.add_argument("title", help="Tiêu đề đề xuất")
+    p_cmd.add_argument("--options", required=True, help="JSON list các phương án hoặc chuỗi phân tách dấu phẩy")
+    p_cmd.add_argument("--duration", type=int, default=150, help="Thời gian chờ tính bằng giây (mặc định 150)")
+
+    # acceptance
+    a_cmd = sub.add_parser("acceptance", help="Phát báo cáo nghiệm thu lên Widget")
+    a_cmd.add_argument("title", help="Tiêu đề nghiệm thu")
+    a_cmd.add_argument("--summary", default="", help="Nội dung tóm tắt nghiệm thu")
+    a_cmd.add_argument("--files", default="", help="Danh sách files thay đổi (phân tách dấu phẩy)")
+    a_cmd.add_argument("--exit-code", type=int, default=0, help="Exit code (mặc định 0)")
+
+    # status
+    s_cmd = sub.add_parser("status", help="Xem trạng thái bridge hiện tại")
+
+    # clear
+    c_cmd = sub.add_parser("clear", help="Xóa trạng thái bridge về IDLE")
+
+    args = parser.parse_args()
+
+    if args.command == "proposal":
+        opts = []
+        try:
+            opts = json.loads(args.options)
+        except Exception:
+            raw_items = [x.strip() for x in args.options.split(",") if x.strip()]
+            for idx, text in enumerate(raw_items, 1):
+                opts.append({
+                    "id": idx,
+                    "text": text,
+                    "recommended": (idx == 1)
+                })
+        ok = publish_proposal(args.title, opts, duration_seconds=args.duration)
+        if ok:
+            print(f"✓ Đã phát đề xuất kỹ thuật [{args.title}] lên Desktop Widget HUD ({len(opts)} options, {args.duration}s)")
+        else:
+            print("❌ Lỗi khi phát đề xuất kỹ thuật lên Widget")
+            sys.exit(1)
+
+    elif args.command == "acceptance":
+        f_list = [x.strip() for x in args.files.split(",") if x.strip()] if args.files else []
+        ok = publish_acceptance(args.title, args.summary, files_changed=f_list, exit_code=args.exit_code)
+        if ok:
+            print(f"✓ Đã phát báo cáo nghiệm thu [{args.title}] lên Desktop Widget HUD")
+        else:
+            print("❌ Lỗi khi phát báo cáo nghiệm thu lên Widget")
+            sys.exit(1)
+
+    elif args.command == "status":
+        print(json.dumps(get_bridge_state(), indent=2, ensure_ascii=False))
+
+    elif args.command == "clear":
+        clear_bridge()
+        print("✓ Đã xóa trạng thái bridge về IDLE")
+
+    else:
+        parser.print_help()
+

@@ -87,20 +87,19 @@ Khi tất cả các tiêu chí trong Execution Brief hoặc mục tiêu sửa bu
 
 Hệ thống chuyển hướng toàn bộ khâu Đề xuất Kỹ thuật (🧭) và Nghiệm thu Hoàn thiện (💎) sang **Desktop Widget Popover HUD** thông qua IPC Bridge (`scripts/teamwork_bridge.py`), **BỎ HOÀN TOÀN modal `ask_question` cũ trong khung chat**:
 
-### 1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡 (2 Lối Song Hành: Chat Stream + Widget HUD Popover)
+### 1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡 (Hiển Thị Chat Lịch Sử + Chọn Trên Widget HUD + Hết Giờ Tự Động Tiếp Tục)
 - **Khi nào kích hoạt**: Khi vừa nhận yêu cầu mới, phân tích hướng đi, hoặc đứng trước các ngã rẽ kỹ thuật quan trọng.
-- **Quy chuẩn thực thi 2 Lối Song Hành**:
-  1. **Lối 1 (Khung Chat Antigravity)**:
-     - Agent in trực tiếp danh sách phương án ra khung chat, đánh số thứ tự rõ ràng kèm phương án `[1] (Recommended) ⭐`.
-     - **BẮT BUỘC gọi công cụ `schedule`** (`DurationSeconds: 150`, `TimerCondition: "any"`, `Prompt: "Hết hạn 2.5 phút chờ đề xuất kỹ thuật. Tự động kích hoạt phương án [1] (Khuyên dùng) và tiếp tục thực thi."`).
-     - Nếu người dùng có mặt và gõ phím/chọn: Timer `schedule` tự hủy ngay lập tức.
-     - Nếu người dùng vắng mặt: Hết 2.5 phút, `schedule` tự động đánh thức AI chọn phương án 1 và tiếp tục code, không để đứt đoạn mạch công việc.
-  2. **Lối 2 (Desktop Widget HUD Popover)**:
-     - Agent đồng thời gọi `teamwork_bridge.publish_proposal(title, options, duration_seconds=150)` để đẩy đề xuất lên Desktop Widget.
+- **Quy chuẩn thực thi**:
+  1. **Lối 1 (Khung Chat Antigravity — Chỉ hiển thị lịch sử để nhìn)**:
+     - Agent in trực tiếp danh sách phương án ra khung chat dưới dạng markdown rõ ràng, đánh số thứ tự kèm phương án `[1] (Recommended) ⭐`, `[2]`... để người dùng theo dõi.
+     - **TUYỆT ĐỐI KHÔNG GỌI modal `ask_question`**: Bỏ hoàn toàn modal popup chọn trên chat của Antigravity (giải phóng khung chat 100%, không che màn hình, không đóng băng tiến trình).
+  2. **Lối 2 (Desktop Widget HUD Popover — Chọn đề xuất trên Widget)**:
+     - Agent gọi `teamwork_bridge.publish_proposal(title, options, duration_seconds=150)` để đẩy đề xuất lên Desktop Widget.
      - Widget tự động bung Popover to rõ trên Desktop với đồng hồ đếm ngược 7 màu Spectrum và danh sách phương án trực quan.
-     - Người dùng có thể click chọn trực tiếp trên Desktop Widget (Widget tự động focus và gửi phím số xuống IDE).
-     - **Tự động trả về 1 khi hết giờ**: Khi Widget đếm đủ thời gian (hết 150 giây) mà người dùng chưa bấm chọn gì, Widget sẽ **tự động gửi phím '1' về Antigravity IDE cho gọn** và tự đóng Popover!
-  3. **TUYỆT ĐỐI KHÔNG GỌI modal `ask_question`**: Khung chat hoàn toàn rảnh rang, không bị modal pop-up chiếm chỗ hay đóng băng tiến trình.
+     - Người dùng click chọn phương án trực tiếp trên Desktop Widget (hoặc gõ số vào chat).
+  3. **Hết Giờ Tự Động Tiếp Tục (100% Auto-Continue Timeout Fallback)**:
+     - Agent khởi chạy `py scripts/wait_for_proposal_choice.py --timeout 150` ngầm (hoặc gọi công cụ `schedule(DurationSeconds: 150, TimerCondition: "any")`).
+     - Khi hết 150 giây (2.5 phút) mà người dùng chưa bấm chọn gì, hệ thống **TỰ ĐỘNG KÍCH HOẠT PHƯƠNG ÁN [1] (Khuyên dùng) VÀ TIẾP TỤC THỰC THI NGAY LẬP TỨC**, tuyệt đối không bao giờ dừng phiên hay treo máy.
 
 ### 2. 💎 [CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Widget HUD Decoupled — Treo Cố Định Widget)
 - **Khi nào kích hoạt**: Khi code đã viết xong, toàn bộ kiểm thử tích hợp đạt 100% PASS (Exit Code 0).

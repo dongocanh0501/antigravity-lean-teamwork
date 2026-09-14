@@ -80,10 +80,11 @@ def main():
         pass
 
     anchor_msg = (
-        f'⚡ [MANDATORY RE-ANCHOR — Lean Teamwork v{ver} (Widget HUD Decoupled)]:\\n'
-        '1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡 (Widget HUD): Khi mở đầu hoặc chọn giải pháp kỹ thuật, BẮT BUỘC gọi teamwork_bridge.publish_proposal(title, options, 150) để hiển thị bộ chọn trên Desktop Widget Popover. In tóm tắt ra chat, TUYỆT ĐỐI KHÔNG gọi modal ask_question (giải phóng khung chat 100%).\\n'
-        '2. 💎 [CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Widget HUD): Khi code xong và test pass (exit 0): BƯỚC 1 in toàn văn Báo cáo & Hướng dẫn đối chứng ra màn hình chat; BƯỚC 2 gọi teamwork_bridge.publish_acceptance(...) để treo bảng nghiệm thu cố định trên Desktop Widget Popover. TUYỆT ĐỐI KHÔNG gọi modal ask_question làm che khung chat, user có thể bấm trực tiếp từ Desktop Widget (điều phối an toàn qua IPC bridge) hoặc xác nhận trực tiếp trong chat ("ok" / "OK 💎").\\n'
-        '3. FIRST-TIME RIGHT: Inspect First kỹ lưỡng trước khi sửa, cấm đoán mò vì sợ đọc tài liệu.'
+        f'⚡ [MANDATORY RE-ANCHOR — Lean Teamwork v{ver} (Widget HUD Decoupled & Zero-Block Chat)]:\\n'
+        '1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡 (Hiển Thị Chat Lịch Sử + Chọn Trên Widget HUD + Hết Giờ Tự Động Tiếp Tục): Khi mở đầu hoặc chọn giải pháp kỹ thuật: (a) Khung Chat: BỎ HOÀN TOÀN modal popup ask_question trên chat Antigravity (giải phóng khung chat 100%, TUYỆT ĐỐI KHÔNG gọi modal ask_question). Chỉ hiển thị đề xuất ra lịch sử chat thông thường dạng markdown để nhìn thấy kèm đánh số "[1] (Recommended) ⭐", "[2]"...; (b) Widget HUD: Phát đề xuất lên Desktop Widget HUD Popover (teamwork_bridge.publish_proposal), người dùng chọn trực tiếp trên Widget; (c) Hết Giờ Tự Động Tiếp Tục: Khởi chạy "py scripts/wait_for_proposal_choice.py --timeout 150" ngầm (hoặc schedule(DurationSeconds=150, TimerCondition="any")), khi hết hạn 150s tự động kích hoạt [1] (Khuyên dùng) và tiếp tục thực thi ngay lập tức, không bao giờ bị treo phiên.\\n'
+        '2. 💎 [CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Widget HUD): Khi code xong và test pass (exit 0): BƯỚC 1 in toàn văn Báo cáo & Hướng dẫn đối chứng ra màn hình chat (TUYỆT ĐỐI KHÔNG gọi modal popup ask_question che chữ); BƯỚC 2 gọi teamwork_bridge.publish_acceptance(...) để treo bảng nghiệm thu cố định trên Desktop Widget Popover. Khung chat rảnh rang 100%, user có thể bấm trực tiếp từ Desktop Widget (điều phối an toàn qua IPC bridge) hoặc xác nhận trực tiếp trong chat ("ok" / "OK 💎").\\n'
+        '3. 🔑 [MẬT MÃ NGHIỆM THU "OK 💎" / "ok::" & CHỐNG NHẦM LẪN]: Tín hiệu nghiệm thu chuẩn hóa là "OK 💎" (hoặc "ok::" / "hoàn tất"). CẤM nhầm lẫn các từ "ok" trao đổi thông thường (như "ok làm tiếp", "ok nhé"...) là lệnh nghiệm thu. AI chỉ kích hoạt Self-Evolution khi bắt được mật mã nghiệm thu hoặc sự kiện từ widget, và BẮT BUỘC rà soát TOÀN BỘ chuỗi lỗi từ lần bấm Hoàn tất gần nhất đến nay.\\n'
+        '4. FIRST-TIME RIGHT: Inspect First kỹ lưỡng trước khi sửa, cấm đoán mò vì sợ đọc tài liệu.'
     )
     if widget_event_msg:
         anchor_msg += widget_event_msg

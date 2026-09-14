@@ -57,7 +57,8 @@ def main():
         # New runtime generation: stale pre-fix Python processes sometimes
         # retained the former mutex after their native HWND vanished.  Keeping
         # a versioned mutex lets this corrected build recover without killing
-        # an unrelated ``pythonw main.py`` process.
+        kernel32.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_bool, ctypes.c_wchar_p]
+        kernel32.CreateMutexW.restype = ctypes.c_void_p
         mutex = kernel32.CreateMutexW(None, True, "Local\\AntigravityQuotaWidgetV10ProMutexV2")
         if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
             return

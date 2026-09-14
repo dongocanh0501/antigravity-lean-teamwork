@@ -2,6 +2,21 @@
 
 Tất cả các thay đổi, bài học và tính năng nâng cấp qua từng phiên bản.
 
+## [1.5.15] — 2026-09-14
+### Fixed & Architecture (Zero-Block Chat & Widget Decoupling)
+- **Khử Bỏ Hoàn Toàn Modal Popup `ask_question` Trong Khung Chat Antigravity**:
+  - Triệt tiêu 100% việc gọi công cụ chặn cứng `ask_question` cho đề xuất kỹ thuật và nghiệm thu. Khung chat rảnh rang, không che chữ, không bị popup đóng băng giao diện.
+  - Đề xuất kỹ thuật chỉ in ra dưới dạng tin nhắn Markdown thông thường trong lịch sử chat để người dùng theo dõi và nhìn rõ.
+- **Chuyển Toàn Bộ Khâu Chọn Đề Xuất Sang Desktop Widget Popover HUD**:
+  - Điều phối dữ liệu qua `teamwork_bridge.publish_proposal` với đầy đủ đồng hồ Spectrum và các lựa chọn trực quan.
+  - Người dùng click chọn phương án trực tiếp trên Desktop Widget (hoặc gõ số vào chat).
+- **Khắc Phục Lỗi Hết Giờ Vẫn Không Tiếp Tục (100% Timeout Auto-Continue)**:
+  - Trang bị script lắng nghe ngầm `scripts/wait_for_proposal_choice.py` và hỗ trợ fallback `schedule(DurationSeconds=150, TimerCondition="any")`.
+  - Khi hết 150 giây mà người dùng chưa tương tác, hệ thống tự động kích hoạt Phương án [1] (Khuyên dùng) và tiếp tục thực thi ngay lập tức, không bao giờ bị dừng hay treo phiên.
+- **Cập Nhật Toàn Diện & Kiểm Thử Toàn Vẹn**:
+  - Đồng bộ và làm sạch quy tắc tại toàn bộ các tệp `GEMINI.md` hệ thống (`~/.gemini/GEMINI.md`, `~/.gemini/antigravity/GEMINI.md`, `~/.gemini/config/GEMINI.md`), `SKILL.md` và hooks.
+  - Bổ sung `test_14_proposal_cli_and_wait_listener` vào `tests/test_teamwork_bridge.py`. Bộ kiểm thử đạt 14/14 checks PASS (Exit code 0).
+
 ## [1.5.14] — 2026-09-14
 ### Added & UI/UX Governance
 - **Kho Thẩm Mỹ UI/UX Riêng & Tự Động Nạp Gu Thiết Kế (Dedicated UI/UX Design DNA & Auto-Taste Injection)**:
