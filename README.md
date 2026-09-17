@@ -50,6 +50,9 @@
 ```powershell
 # Chạy duy nhất lệnh này sau khi tải về để cài đặt toàn bộ:
 powershell -ExecutionPolicy Bypass -File .\install.ps1
+
+# Khi muốn gỡ bỏ hoàn toàn khỏi Antigravity và dùng như repo độc lập:
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
 ```
 *Xem hướng dẫn đầy đủ từ A -> Z tại [INSTALL.md](INSTALL.md).*
 

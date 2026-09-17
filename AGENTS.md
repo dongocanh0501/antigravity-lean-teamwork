@@ -58,3 +58,15 @@ py sync_skill.py --bump patch
 - **Zero-Scan Protocol**: Khi mở thư mục này trên máy mới, Agent đọc file `AGENTS.md` hoặc `GEMINI.md` này và thi hành lệnh ngay, không đọc lan man.
 - **Two-Way Parity**: Luôn giữ phiên bản và tri thức giữa folder gốc và máy tính đồng nhất.
 - **From-Last-Completion Anchor**: Khi người dùng chưa bấm Hoàn tất vì còn lỗi và tiếp tục chat, đến khi bấm Hoàn tất phải tổng hợp toàn bộ các lỗi trung gian từ lần bấm Hoàn tất gần nhất đến nay.
+
+---
+
+## 🧹 5. Khi Người Dùng Yêu Cầu "bỏ skill teamwork khỏi anti", "gỡ cài đặt", "uninstall" hoặc "cách ly repo":
+
+Agent chạy ngay lệnh:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
+```
+*(hoặc `py sync_skill.py --uninstall`)*
+Toàn bộ hook, skill và quy chuẩn cưỡng chế toàn cục sẽ được dỡ bỏ khỏi Antigravity, trả IDE về trạng thái nguyên bản sạch sẽ và cô lập repo thành một standalone project độc lập.
+

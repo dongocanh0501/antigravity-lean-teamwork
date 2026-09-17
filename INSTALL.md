@@ -123,5 +123,24 @@ py tests\test_teamwork_bridge.py
 - **Khi máy KHÔNG CÓ Cockpit Tool (Máy mới hoàn toàn)**:
   - Widget tự động kích hoạt **Native Antigravity IDE Mode**: Trích xuất trực tiếp tài khoản Google đang đăng nhập trong Google Antigravity IDE (`state.vscdb`).
   - Hiển thị tên người dùng và email thật, trạng thái sẵn sàng 100%, **tuyệt đối không bị lỗi "Offline" hay "No Acc"**.
-  - Toàn bộ cây cầu tương tác **Lean Teamwork HUD** (Đề xuất kỹ thuật & Nghiệm thu hoàn thiện) vận hành trơn tru độc lập 100%, không phụ thuộc vào Cockpit Tool!
+- Toàn bộ cây cầu tương tác **Lean Teamwork HUD** (Đề xuất kỹ thuật & Nghiệm thu hoàn thiện) vận hành trơn tru độc lập 100%, không phụ thuộc vào Cockpit Tool!
+
+---
+
+## 🧹 8. Gỡ Bỏ Khỏi Antigravity Toàn Cục & Cách Ly Repo Độc Lập (Uninstall & Decoupling)
+
+Khi bạn muốn đưa Antigravity IDE về trạng thái nguyên bản sạch sẽ và **chỉ sử dụng repo này như một dự án/công cụ độc lập** (không ép buộc mọi workspace hay mọi phiên chat):
+
+### Chạy 1-Click để gỡ bỏ toàn cục:
+```powershell
+.\uninstall.ps1
+```
+*(Hoặc dùng Python: `py sync_skill.py --uninstall`)*
+
+### Kết quả sau khi gỡ:
+- Hook toàn cục `~/.gemini/config/hooks.json` được xóa bỏ sạch sẽ.
+- File `auto_reanchor_hook.py` và thư mục skill `~/.gemini/config/skills/lean-teamwork` được loại bỏ.
+- Các file quy chuẩn `GEMINI.md` toàn cục trở về trạng thái sạch, không bị inject.
+- Repo `antigravity-lean-teamwork` hoạt động hoàn toàn độc lập, không can thiệp hay ảnh hưởng đến các dự án khác trên máy.
+
 

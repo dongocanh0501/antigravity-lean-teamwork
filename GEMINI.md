@@ -25,3 +25,15 @@
 ```powershell
 py sync_skill.py --bump patch
 ```
+
+---
+
+## 🧹 Gỡ Bỏ Khỏi Antigravity Toàn Cục & Cách Ly Thành Repo Độc Lập:
+Khi người dùng yêu cầu "bỏ skill teamwork khỏi anti", "gỡ cài đặt", "uninstall", hoặc "cách ly repo":
+- Chạy lệnh:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
+  ```
+  *(hoặc `py sync_skill.py --uninstall`)*
+- Lệnh sẽ tự động xóa sạch hooks toàn cục, xóa skill toàn cục, dọn sạch quy tắc GEMINI.md hệ thống và đưa Antigravity về trạng thái nguyên bản sạch 100%. Repo tiếp tục hoạt động độc lập.
+

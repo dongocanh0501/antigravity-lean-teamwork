@@ -311,3 +311,21 @@ Tài liệu này là nơi lưu trữ các tri thức kỹ thuật, mẫu sửa l
     3. **Chuyển Toàn Bộ Khâu Chọn Sang Desktop Widget Popover HUD**: AI gọi `teamwork_bridge.publish_proposal(title, options, 150)`. Desktop Widget bung Popover HUD trực quan với đồng hồ đếm ngược Spectrum và các nút bấm phương án để người dùng chọn trực tiếp.
     4. **Tự Động Tiếp Tục Bằng Background Listener & Timeout Fallback**: Khởi chạy script lắng nghe ngầm `py scripts/wait_for_proposal_choice.py --timeout 150` (hoặc `schedule(DurationSeconds=150, TimerCondition="any")`). Nếu người dùng bấm chọn trên Widget, script bắt ngay lập tức và đánh thức Agent; nếu hết 150s mà không có tương tác, script tự động chọn Phương án [1] và đánh thức Agent tiếp tục thực thi ngay lập tức, triệt tiêu hoàn toàn tình trạng treo phiên.
   - *Lệnh test*: `py -m unittest discover -s tests` & `py tests/test_skill_integrity.py` -> 14/14 PASS (Exit code 0).
+
+## Mẫu 27: [Windows Compatibility & Launcher] Windows Signal Handling & Single-Instance Port Awareness
+- **[M365-Copilot2API] [Windows Launcher & Signal Compatibility]**:
+  - *Nguyên nhân gốc*: Windows không hỗ trợ `signal.SIGKILL` trong module `signal`, gây crash khi terminate tiến trình qua `manage.py stop`. Script khởi động thiếu kiểm tra port gây xung đột cổng mạng hoặc mở trùng lặp tiến trình.
+  - *Giải pháp tối thiểu*: Chuyển sang `os.kill(pid, signal.SIGTERM)` trên Windows và chuẩn hóa script `start-m365-copilot2api.bat` với cơ chế nhận diện port 4141 (Single-Instance Port Awareness).
+  - *Lệnh test*: `curl.exe -I http://127.0.0.1:4141/` -> HTTP 200 OK (Exit code 0).
+
+## Mẫu 28: [SheerID] Telegram Bot Private Access & Env Loading
+- **[SheerID] [Telegram Bot Private Access & Env Loading]**:
+  - *Nguyên nhân gốc*: Cần nạp `--env-file=.env` cho tsx script và thêm middleware kiểm tra `ctx.from.id` với `ALLOWED_USER_IDS` để khóa quyền bot Telegram riêng tư.
+  - *Giải pháp tối thiểu*: Thêm middleware kiểm tra `allowedUsers` và cập nhật `package.json` scripts with `--env-file=.env`.
+  - *Lệnh test*: `npm run typecheck && npx tsx --env-file=.env src/index.ts` (Exit code 0).
+
+## Mẫu 29: [Windows/Batch/Python] M365-Copilot2API Update & Launcher Fix
+- **[Windows/Batch/Python] [M365-Copilot2API Update & Launcher Fix]**:
+  - *Nguyên nhân*: Đường dẫn repo trong apply_vietnamese.py bị gán tĩnh scratch path dẫn tới FileNotFoundError; chuỗi regex không có tiền tố raw 'r' gây SyntaxWarning; file .bat dùng lệnh timeout gây lỗi input redirection khiến trình duyệt không mở được; manage.py os.kill gặp Access Denied trên Windows.
+  - *Giải pháp*: Dùng os.path.dirname(os.path.abspath(__file__)), raw string r""", thay timeout bằng ping delay/start "" browser, và thay os.kill bằng taskkill /F.
+  - *Lệnh test*: python update.py && cmd.exe /c "start-m365-copilot2api.bat"

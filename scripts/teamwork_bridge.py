@@ -12,6 +12,12 @@ import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 BRIDGE_DIR = Path.home() / '.antigravity_cockpit'
 BRIDGE_FILE = BRIDGE_DIR / 'teamwork_bridge.json'
 

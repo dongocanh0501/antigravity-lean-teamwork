@@ -8,7 +8,19 @@ trên laptop hoặc máy tính mới chỉ với 1 lệnh duy nhất, không c�
 import os
 import sys
 import shutil
+import json
+import stat
 from pathlib import Path
+
+def force_rmtree(path):
+    def on_error(func, p, exc_info):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+            func(p)
+        except Exception:
+            pass
+    if Path(path).exists():
+        shutil.rmtree(path, onerror=on_error)
 
 # Đảm bảo in UTF-8 an toàn trên Windows console
 if sys.platform == "win32":
@@ -121,51 +133,98 @@ def bidirectional_merge_patterns():
         print(f"  ✓ Đã đồng bộ ngược {added_to_source} bài học từ máy tính về folder gốc!")
     print(f"  ✓ Cân bằng 2 chiều tri thức thành công ({len(merged_blocks)} patterns tại cả 2 nơi).")
 
-def ensure_stock_gemini():
+def uninstall_from_antigravity():
+    """Gỡ bỏ hoàn toàn Lean Teamwork khỏi Antigravity toàn cục, cách ly thành repo độc lập."""
+    print("============================================================")
+    print("  🧹 BẮT ĐẦU GỠ BỎ LEAN TEAMWORK KHỎI TOÀN CỤC ANTIGRAVITY")
+    print("============================================================")
+
+    # 1. Gỡ PreInvocation Hook khỏi hooks.json
+    global_hooks_file = GLOBAL_CONFIG_DIR / "hooks.json"
+    if global_hooks_file.exists():
+        try:
+            h_data = json.loads(global_hooks_file.read_text(encoding="utf-8"))
+            if "lean-teamwork-global-reanchor" in h_data:
+                del h_data["lean-teamwork-global-reanchor"]
+                global_hooks_file.write_text(json.dumps(h_data, ensure_ascii=False, indent=2), encoding="utf-8")
+                print("  ✓ Đã gỡ bỏ PreInvocation Hook khỏi ~/.gemini/config/hooks.json")
+            else:
+                print("  ✓ ~/.gemini/config/hooks.json không còn hook lean-teamwork.")
+        except Exception as e:
+            print(f"  ⚠ Lỗi đọc hooks.json: {e}")
+
+    # 2. Xóa script auto_reanchor_hook.py
+    global_hook_script = GLOBAL_CONFIG_DIR / "scripts" / "auto_reanchor_hook.py"
+    if global_hook_script.exists():
+        try:
+            global_hook_script.unlink()
+            print("  ✓ Đã xóa script ~/.gemini/config/scripts/auto_reanchor_hook.py")
+        except Exception as e:
+            print(f"  ⚠ Lỗi xóa script hook: {e}")
+
+    # 3. Xóa thư mục skill toàn cục ~/.gemini/config/skills/lean-teamwork
+    if GLOBAL_SKILL_DIR.exists():
+        try:
+            force_rmtree(GLOBAL_SKILL_DIR)
+            print("  ✓ Đã xóa thư mục skill toàn cục ~/.gemini/config/skills/lean-teamwork")
+        except Exception as e:
+            print(f"  ⚠ Lỗi xóa thư mục skill: {e}")
+
+    # 4. Xóa Builtin skill (nếu có)
+    if BUILTIN_SKILL_DIR.exists():
+        try:
+            force_rmtree(BUILTIN_SKILL_DIR)
+            print("  ✓ Đã xóa thư mục builtin skill ~/.gemini/antigravity/builtin/skills/lean-teamwork")
+        except Exception as e:
+            print(f"  ⚠ Lỗi xóa builtin skill: {e}")
+
+    # 5. Dọn dẹp GEMINI.md toàn cục
     gemini_candidates = [
         Path(os.path.expanduser("~")) / ".gemini" / "antigravity" / "GEMINI.md",
         Path(os.path.expanduser("~")) / ".gemini" / "GEMINI.md",
         GLOBAL_CONFIG_DIR / "GEMINI.md"
     ]
-    lean_gate_ref = "- Lean Teamwork Protocol: `.agents/skills/lean-teamwork/SKILL.md` (kích hoạt 🧭 [ĐỀ XUẤT KỸ THUẬT] và 💎 [NGHIỆM THU HOÀN THIỆN] tách nhịp 2 bước)\n"
-
     for gf in gemini_candidates:
-        gf.parent.mkdir(parents=True, exist_ok=True)
         if gf.exists():
-            txt = gf.read_text(encoding="utf-8")
-            if "BẮT BUỘC dùng modal ask_question" in txt:
-                old_rule = (
-                    "1. 🧭 **[CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡**: Khi mở đầu bất kỳ tác vụ nào hoặc đứng trước ngã rẽ giải pháp, BẮT BUỘC dùng modal ask_question với tiền tố tiêu đề 🧭 [ĐỀ XUẤT KỸ THUẬT] ⏱️ [HẠN CHỐT: HH:MM:SS] 💡 kèm ảnh đồng hồ đếm ngược 7 màu macOS Spectrum trong suốt bằng đường dẫn tuyệt đối dạng `![🧭 ĐỀ XUẤT KỸ THUẬT 💡](C:/Users/tient/.gemini/antigravity/brain/<conv_id>/technical_proposal_timer.svg)` (được hook cấp sẵn đường dẫn chính xác trong thông điệp Re-Anchor, CẤM dùng đường dẫn tương đối làm gãy ảnh, CẤM tự vẽ lại SVG nền đen `#0D1117`). Cung cấp 2–4 lựa chọn kèm (Recommended). Hạn 2.5 phút tự động chọn hướng tối ưu; nếu người dùng chọn ô 3 (nhập riêng) thì tự động tạm dừng đồng hồ chờ người dùng 100%.\n"
-                    "  2. 💎 **[CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Tách Nhịp 2 Bước)**: Sau khi hoàn thành code và test pass, BẮT BUỘC tuân thủ: BƯỚC 1 in toàn văn Báo cáo & Hướng dẫn đối chứng ra màn hình, cấm bật modal che chữ; BƯỚC 2 kích hoạt modal 💎 [NGHIỆM THU HOÀN THIỆN] (100% Hoàn Tất vs Superpowers Debug) treo cố định chờ người dùng đối chứng."
-                )
-                new_rule = (
-                    "1. 🧭 **[CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT] 💡 (Hiển Thị Chat Lịch Sử + Chọn Trên Widget HUD + Hết Giờ Tự Động Tiếp Tục)**: Khi mở đầu hoặc chọn giải pháp kỹ thuật: BỎ HOÀN TOÀN modal popup `ask_question` trên chat Antigravity (giải phóng khung chat 100%, TUYỆT ĐỐI KHÔNG gọi modal `ask_question`). In đề xuất ra lịch sử chat thông thường dạng markdown để người dùng theo dõi kèm đánh số `[1] (Khuyên dùng) ⭐`, `[2]`... Đồng thời phát đề xuất lên Desktop Widget HUD Popover (`teamwork_bridge.publish_proposal`). Người dùng chọn đề xuất trực tiếp trên Widget (hoặc gõ số vào chat). Hết hạn 2.5 phút (150s), hệ thống TỰ ĐỘNG KÍCH HOẠT PHƯƠNG ÁN [1] (Khuyên dùng) VÀ TIẾP TỤC THỰC THI NGAY LẬP TỨC, không bao giờ bị dừng phiên.\n"
-                    "  2. 💎 **[CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] ✨ (Hiển Thị Chat + Treo Cố Định Widget HUD)**: Sau khi hoàn thành code và test pass (exit 0), BẮT BUỘC tuân thủ: BƯỚC 1 in toàn văn Báo cáo & Hướng dẫn đối chứng ra màn hình chat (TUYỆT ĐỐI KHÔNG gọi modal popup `ask_question` che chữ); BƯỚC 2 gọi `teamwork_bridge.publish_acceptance(...)` để treo bảng nghiệm thu cố định trên Desktop Widget Popover (`[100% HOÀN TẤT] ✨` / `[SUPERPOWERS DEBUG] 🛠️`). Khung chat rảnh rang 100%, người dùng xác nhận trên Desktop Widget hoặc chat `OK 💎` / `ok::`."
-                )
-                txt = txt.replace(old_rule, new_rule)
-                gf.write_text(txt, encoding="utf-8")
-            if "Lean Teamwork Protocol" not in txt:
-                txt = txt.strip() + "\n" + lean_gate_ref
-                gf.write_text(txt, encoding="utf-8")
-        else:
-            # Khởi tạo mặc định nếu chưa có
-            stock_txt = (
-                "# Antigravity Global Operating Rules (Global Operating Contract v2)\n\n"
-                "Quy chuẩn nạp mặc định cho Antigravity.\n\n"
-                "## 1. Intent and authority gate\n"
-                "- Thực hiện ngay khi outcome, scope đều rõ.\n"
-                "- Kích hoạt Lean Teamwork Protocol: `🧭 [ĐỀ XUẤT KỸ THUẬT]` và `💎 [NGHIỆM THU HOÀN THIỆN]`.\n\n"
-                "## Reference map (load on demand)\n"
-                + lean_gate_ref
-            )
-            gf.write_text(stock_txt, encoding="utf-8")
-    print("  ✓ Đã kiểm tra và duy trì mỏ neo Lean Teamwork tại toàn bộ GEMINI.md hệ thống!")
+            try:
+                lines = gf.read_text(encoding="utf-8").splitlines()
+                clean_lines = []
+                for line in lines:
+                    # Bỏ các dòng liên quan tới lean-teamwork
+                    if "lean-teamwork" in line.lower() or "lean teamwork protocol" in line.lower():
+                        continue
+                    if "🧭 [đề xuất kỹ thuật]" in line.lower() or "💎 [nghiệm thu hoàn thiện]" in line.lower():
+                        continue
+                    clean_lines.append(line)
+                clean_content = "\n".join(clean_lines).strip()
+                if clean_content:
+                    gf.write_text(clean_content + "\n", encoding="utf-8")
+                else:
+                    gf.unlink()
+                print(f"  ✓ Đã dọn sạch tham chiếu lean-teamwork tại {gf}")
+            except Exception as e:
+                print(f"  ⚠ Lỗi làm sạch {gf}: {e}")
+
+    # 6. Xóa shortcut Desktop nếu có
+    desktop_shortcut = Path(os.path.expanduser("~")) / "Desktop" / "Antigravity Widget.lnk"
+    if desktop_shortcut.exists():
+        try:
+            desktop_shortcut.unlink()
+            print("  ✓ Đã xóa Shortcut ngoài Desktop (Antigravity Widget.lnk)")
+        except Exception as e:
+            print(f"  ⚠ Lỗi xóa shortcut: {e}")
+
+    print("\n============================================================")
+    print("  🎉 ĐÃ GỠ BỎ TOÀN BỘ VÀ CÁCH LY THÀNH CÔNG!")
+    print("  • Môi trường Antigravity toàn cục đã sạch 100%.")
+    print(f"  • Repo hiện tại ({REPO_ROOT}) hoạt động độc lập.")
+    print("============================================================")
+
+def ensure_stock_gemini():
+    pass
+
 def ensure_global_hooks():
-    setup_script = REPO_ROOT / "scripts" / "setup_global_hook.py"
-    if setup_script.exists():
-        import subprocess
-        subprocess.run([sys.executable, str(setup_script)], capture_output=True, text=True, encoding="utf-8")
-        print("  ✓ Đã thiết lập Global PreInvocation Hook tại ~/.gemini/config/hooks.json")
+    pass
 
 def sync_source_to_installed(version: str):
     """PULL: Cập nhật từ folder gốc vào máy tính."""
@@ -326,7 +385,9 @@ def install_to_project(target_path_str: str):
     print(f"[SUCCESS] Dự án {target_dir.name} đã được trang bị Lean Teamwork hoàn chỉnh 100%!")
 
 if __name__ == "__main__":
-    if "--install-to" in sys.argv:
+    if "--uninstall" in sys.argv:
+        uninstall_from_antigravity()
+    elif "--install-to" in sys.argv:
         idx = sys.argv.index("--install-to")
         if len(sys.argv) > idx + 1:
             install_to_project(sys.argv[idx + 1])

@@ -315,7 +315,7 @@ class TestTeamworkWidgetIntegration(unittest.TestCase):
             sys.executable, str(cli_py), "proposal", "Kế hoạch Refactor",
             "--options", '[{"id": 1, "text": "Phương án 1", "recommended": true}, {"id": 2, "text": "Phương án 2"}]',
             "--duration", "10"
-        ], capture_output=True, text=True, encoding="utf-8")
+        ], capture_output=True, text=True, encoding="utf-8", errors="replace")
         self.assertEqual(res_p.returncode, 0)
         st = teamwork_bridge.get_bridge_state()
         self.assertEqual(st["status"], "PROPOSAL")
@@ -327,7 +327,7 @@ class TestTeamworkWidgetIntegration(unittest.TestCase):
 
         res_t = subprocess.run([
             sys.executable, str(listener_py), "--timeout", "1", "--interval", "0.2"
-        ], capture_output=True, text=True, encoding="utf-8")
+        ], capture_output=True, text=True, encoding="utf-8", errors="replace")
         self.assertEqual(res_t.returncode, 0)
         self.assertIn("[TIMEOUT]", res_t.stdout)
         self.assertIn("Phương án [1]", res_t.stdout)
@@ -339,7 +339,7 @@ class TestTeamworkWidgetIntegration(unittest.TestCase):
 
         p = subprocess.Popen(
             [sys.executable, str(listener_py), "--timeout", "5", "--interval", "0.2"],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8"
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace"
         )
         time.sleep(0.6)
         teamwork_bridge.submit_user_response("SELECT_OPTION", selected_option_id=2, note="User chose 2 on widget")
