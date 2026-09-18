@@ -184,28 +184,62 @@ def uninstall_from_antigravity():
         Path(os.path.expanduser("~")) / ".gemini" / "GEMINI.md",
         GLOBAL_CONFIG_DIR / "GEMINI.md"
     ]
+    lean_keywords = [
+        "lean-teamwork",
+        "lean teamwork protocol",
+        "🧭 [đề xuất kỹ thuật]",
+        "💎 [nghiệm thu hoàn thiện]",
+        "💎 [100% hoàn tất]",
+        "daily lean workflow",
+        "autonomous remediation popup gate",
+        "autonomous remediation",
+        "cổng nghiệm thu popup",
+        "cổng khởi đầu",
+        "clarification gate & best-path fallback",
+        "clarification gate",
+        "superpowers debug",
+        "superpowers",
+        "learned_patterns.md"
+    ]
     for gf in gemini_candidates:
         if gf.exists():
             try:
+                if gf == GLOBAL_CONFIG_DIR / "GEMINI.md":
+                    gf.unlink()
+                    print(f"  ✓ Đã xóa hoàn toàn file rule toàn cục {gf}")
+                    continue
+
                 lines = gf.read_text(encoding="utf-8").splitlines()
                 clean_lines = []
+                skip_section = False
                 for line in lines:
-                    # Bỏ các dòng liên quan tới lean-teamwork
-                    if "lean-teamwork" in line.lower() or "lean teamwork protocol" in line.lower():
-                        continue
-                    if "🧭 [đề xuất kỹ thuật]" in line.lower() or "💎 [nghiệm thu hoàn thiện]" in line.lower():
+                    line_lower = line.lower()
+                    if any(kw in line_lower for kw in lean_keywords):
                         continue
                     clean_lines.append(line)
                 clean_content = "\n".join(clean_lines).strip()
-                if clean_content:
+                if clean_content and clean_content != "# Antigravity Global Operating Rules":
                     gf.write_text(clean_content + "\n", encoding="utf-8")
                 else:
                     gf.unlink()
-                print(f"  ✓ Đã dọn sạch tham chiếu lean-teamwork tại {gf}")
+                print(f"  ✓ Đã dọn sạch triệt để tham chiếu lean-teamwork tại {gf}")
             except Exception as e:
                 print(f"  ⚠ Lỗi làm sạch {gf}: {e}")
 
-    # 6. Xóa shortcut Desktop nếu có
+    # 6. Dọn dẹp kho learned_patterns khỏi Antigravity toàn cục (repo gốc vẫn lưu trữ đầy đủ)
+    patterns_candidates = [
+        GLOBAL_CONFIG_DIR / "learned_patterns.md",
+        GLOBAL_CONFIG_DIR / "learned_patterns.md.bak"
+    ]
+    for pf in patterns_candidates:
+        if pf.exists():
+            try:
+                pf.unlink()
+                print(f"  ✓ Đã xóa tàn dư tri thức toàn cục {pf}")
+            except Exception as e:
+                print(f"  ⚠ Lỗi xóa {pf}: {e}")
+
+    # 7. Xóa shortcut Desktop nếu có
     desktop_shortcut = Path(os.path.expanduser("~")) / "Desktop" / "Antigravity Widget.lnk"
     if desktop_shortcut.exists():
         try:

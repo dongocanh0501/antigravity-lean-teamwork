@@ -10,10 +10,13 @@ def test_stock_agi_integrity():
     """Verify that AGI on this computer is in its original (Stock) state without /teamwork-preview injected."""
     user_home = Path(os.path.expanduser("~"))
     stock_gemini_files = [
+        user_home / ".gemini" / "GEMINI.md",
+        user_home / ".gemini" / "antigravity" / "GEMINI.md",
         user_home / ".gemini" / "config" / "GEMINI.md"
     ]
-    for gf in stock_gemini_files:
-        assert gf.exists(), f"Global file {gf} must exist"
+    existing = [gf for gf in stock_gemini_files if gf.exists()]
+    assert len(existing) > 0, "At least one global GEMINI.md must exist"
+    for gf in existing:
         content = gf.read_text(encoding="utf-8")
         assert "Antigravity Global Operating Rules" in content or "Antigravity Global Operating Contract" in content, f"{gf} must be Antigravity Global Operating Rules or Contract"
         assert "/teamwork-preview" not in content or "Slash Command `/teamwork-preview` mặc định" in content, f"{gf} must NOT contain injected custom /teamwork-preview logic"
