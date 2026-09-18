@@ -299,7 +299,7 @@ def sync_source_to_installed(version: str):
     except Exception as e:
         pass
 
-    # Tự động đồng bộ Widget sang Desktop project nếu đang chạy từ ổ F (tuyệt đối không chạm Cockpit/Codex)
+    # Tự động đồng bộ Widget sang Desktop project nếu đang chạy từ ổ F
     desktop_project_widget = Path(os.path.expanduser("~")) / "Desktop" / "Du An" / "antigravity-lean-teamwork" / "widget"
     if desktop_project_widget.exists() and REPO_ROOT != desktop_project_widget.parent:
         src_widget = REPO_ROOT / "widget"

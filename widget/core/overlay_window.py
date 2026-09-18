@@ -18,7 +18,7 @@ from pathlib import Path
 from .config_manager import (
     BASE_W, BASE_H, MAX_HORIZONTAL_W, MAX_HORIZONTAL_H, NANO_BASE_W, NANO_BASE_H,
     VERTICAL_BASE_W, VERTICAL_BASE_H,
-    PILL_H, TOP_Y, THEMES, COCKPIT_EXE,
+    PILL_H, TOP_Y, THEMES,
     load_state, save_state
 )
 from .glass_materials import (

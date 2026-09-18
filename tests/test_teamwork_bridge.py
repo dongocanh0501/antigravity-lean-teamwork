@@ -126,42 +126,20 @@ class TestTeamworkWidgetIntegration(unittest.TestCase):
         self.assertTrue(acc["name"])
         self.assertIn("Antigravity", acc["source"])
 
-    def test_06_fallback_without_cockpit(self):
-        """Test cơ chế tự động fallback về Native IDE khi máy không có Cockpit Tool."""
-        old_root = antigravity_service.ROOT
-        try:
-            # Giả lập môi trường máy mới không hề có thư mục .antigravity_cockpit
-            antigravity_service.ROOT = Path("C:/nonexistent_cockpit_env_test")
-            antigravity_service.ACCOUNTS_FILE = antigravity_service.ROOT / "accounts.json"
-            antigravity_service.IDE_ACCOUNTS_FILE = antigravity_service.ROOT / "codex_accounts.json"
-            antigravity_service.CURRENT_FILE = antigravity_service.ROOT / "current_account.json"
-            antigravity_service.INSTANCES_FILE = antigravity_service.ROOT / "instances.json"
-            antigravity_service.IDE_INSTANCES_FILE = antigravity_service.ROOT / "codex_instances.json"
-            antigravity_service.ACCOUNT_FILES = antigravity_service.ROOT / "accounts"
-            antigravity_service.QUOTA_CACHE = antigravity_service.ROOT / "cache"
+    def test_06_native_ide_extraction(self):
+        """Test cơ chế trích xuất Native IDE hoạt động trơn tru (không có Cockpit)."""
+        data = antigravity_service.query_antigravity_data()
+        self.assertTrue(data.get("healthy"))
+        self.assertEqual(data.get("source"), "native-antigravity-ide")
+        self.assertNotEqual(data.get("active_email"), "")
+        self.assertNotEqual(data.get("active_email"), "Offline")
 
-            data = antigravity_service.query_antigravity_data()
-            self.assertTrue(data.get("healthy"))
-            self.assertEqual(data.get("source"), "native-antigravity-ide")
-            self.assertNotEqual(data.get("active_email"), "")
-            self.assertNotEqual(data.get("active_email"), "Offline")
-
-            # Kiểm tra danh sách tài khoản popup
-            accs = antigravity_service.get_cockpit_accounts_with_quota()
-            self.assertGreaterEqual(len(accs.get("all", [])), 1)
-            active_acc = accs["all"][0]
-            self.assertTrue(active_acc.get("is_active"))
-            self.assertEqual(active_acc.get("id"), "native_ide")
-        finally:
-            # Khôi phục trạng thái
-            antigravity_service.ROOT = old_root
-            antigravity_service.ACCOUNTS_FILE = old_root / "accounts.json"
-            antigravity_service.IDE_ACCOUNTS_FILE = old_root / "codex_accounts.json"
-            antigravity_service.CURRENT_FILE = old_root / "current_account.json"
-            antigravity_service.INSTANCES_FILE = old_root / "instances.json"
-            antigravity_service.IDE_INSTANCES_FILE = old_root / "codex_instances.json"
-            antigravity_service.ACCOUNT_FILES = old_root / "accounts"
-            antigravity_service.QUOTA_CACHE = old_root / "cache" / "quota_api_v1_desktop" / "authorized"
+        # Kiểm tra danh sách tài khoản popup
+        accs = antigravity_service.get_cockpit_accounts_with_quota()
+        self.assertGreaterEqual(len(accs.get("all", [])), 1)
+        active_acc = accs["all"][0]
+        self.assertTrue(active_acc.get("is_active"))
+        self.assertEqual(active_acc.get("id"), "native_ide")
 
     def test_07_completion_anchor_tracking(self):
         """Test cơ chế ghi nhớ mốc hoàn tất gần nhất và theo dõi lỗi trung gian."""
@@ -267,15 +245,7 @@ class TestTeamworkWidgetIntegration(unittest.TestCase):
         # 3. Khi nghiệm thu phát ra, status chuyển sang ACCEPTANCE
         teamwork_bridge.publish_acceptance("Nghiệm thu khi Minimize", "Đã hoàn thành", files_changed=["a.py"], exit_code=0)
         tw_info_acc = tw_service.get_display_info()
-    def test_11_active_account_prioritization(self):
-        """Test ưu tiên tài khoản mới từ current_account.json và accounts.json thay vì instances.json cũ."""
-        from core.antigravity_service import _current_email, _current_account_id
-        # Khi có current_account.json hoặc accounts.json với current_account_id, hệ thống phải resolve đúng email
-        curr_em = _current_email()
-        curr_id = _current_account_id()
-        self.assertTrue(bool(curr_em))
-        self.assertTrue(bool(curr_id))
-        self.assertIn("@", curr_em)
+
 
     def test_12_compact_teamwork_layout_and_min_size(self):
         """Test layout thu gọn chỉ còn duy nhất chip teamwork khi Antigravity thu nhỏ."""

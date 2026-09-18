@@ -324,10 +324,9 @@ class CockpitGlassPopover:
 
         # 2. Header
         if self.focus_type == 'account':
-            title_text = "⚡ CHUYỂN TÀI KHOẢN (NHÓM GIA ĐÌNH)"
-            sub_text = "Mỗi Tag 1 TK nhiều Quota nhất"
+            title_text = "⚡ TÀI KHOẢN NATIVE IDE"
+            sub_text = "Chế độ Standalone"
         elif self.focus_type == '5h':
-
             title_text = "● ACC HIỆN TẠI · 5H QUOTA"
             pct = self.parent.data.get('five_hour_pct', 0)
             sub_text = f"G {pct}% · C {self.parent.data.get('claude_five_hour_pct', 0)}%"
@@ -337,7 +336,7 @@ class CockpitGlassPopover:
             sub_text = f"G {pct}% · C {self.parent.data.get('claude_weekly_pct', 0)}%"
         else:
             title_text = "● ANTIGRAVITY QUOTA"
-            sub_text = f"{self.parent.data.get('accounts', 0)} TK Cockpit"
+            sub_text = f"Chế độ Native IDE"
 
         title_color = ARGB(255, 56, 189, 248) if pal['is_dark'] else ARGB(255, 2, 132, 199)
         tb_b = make_brush(title_color)

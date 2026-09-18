@@ -13,14 +13,9 @@ from .glass_materials import GLASS_MODES, GLASS_NAMES
 
 # Base Paths
 USER_PROFILE = Path.home()
-ROOT_COCKPIT = USER_PROFILE / '.antigravity_cockpit'
-STATE_FILE = ROOT_COCKPIT / 'antigravity_widget_state.json'
-COCKPIT_DIR = Path(r'C:\Program Files\Cockpit Tools')
-COCKPIT_EXE = COCKPIT_DIR / 'cockpit-tools.exe'
-COCKPIT_CLIPROXY_EXE = COCKPIT_DIR / 'cockpit-cliproxy.exe'
-SIDECAR_DIR = ROOT_COCKPIT / 'codex_local_access_sidecar'
-SIDECAR_CONFIG = SIDECAR_DIR / 'config.json'
-ACCOUNTS_FILE = ROOT_COCKPIT / 'accounts.json'
+ROOT_DIR = USER_PROFILE / '.antigravity_widget'
+STATE_FILE = ROOT_DIR / 'antigravity_widget_state.json'
+
 
 # Exact Pixel-Perfect Dimensions
 # Compact HUD: the former 680px default left a large amount of decorative
@@ -42,42 +37,7 @@ TOP_Y = 6.0
 THEMES = ['battery', 'bar', 'ring', 'orbit', 'cards', 'nano']
 
 
-def get_sidecar_info():
-    """Reads dynamic port and api key directly from Cockpit Sidecar configuration."""
-    port = 64450
-    api_key = None
-    if SIDECAR_CONFIG.exists():
-        try:
-            cfg = json.loads(SIDECAR_CONFIG.read_text(encoding='utf-8'))
-            if cfg.get('port'):
-                port = int(cfg['port'])
-            keys = cfg.get('api-keys') or []
-            if keys:
-                api_key = keys[0]
-        except Exception:
-            pass
-    return {'port': port, 'api_key': api_key}
 
-
-def get_active_codex_account_id():
-    """Compatibility API for the currently selected Cockpit account record.
-
-    The generic Cockpit account store is the only local account source available
-    to this independent Antigravity overlay.  It is shown as Cockpit identity,
-    never represented as a verified Antigravity account or billing plan.
-    """
-    try:
-        inst_file = ROOT / 'instances.json'
-        if inst_file.exists():
-            inst_data = json.loads(inst_file.read_text(encoding='utf-8'))
-            bind_id = (inst_data.get('defaultSettings') or {}).get('bindAccountId')
-            if bind_id and bind_id != '__api_service__':
-                return str(bind_id)
-        data = json.loads(ACCOUNTS_FILE.read_text(encoding='utf-8'))
-        current_id = data.get('current_account_id')
-        return current_id if any(a.get('id') == current_id for a in data.get('accounts', [])) else None
-    except (OSError, ValueError, TypeError):
-        return None
 
 
 def load_state():
