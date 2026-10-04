@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Lean Teamwork Management & Verification Utility (Antigravity CLI Edition)
-Hỗ trợ kiểm tra tính toàn vẹn hệ thống, khử phình tri thức và cài đặt vào dự án.
+Hỗ trợ kiểm tra tính toàn vẹn hệ thống, khử phình tri thức và cài đặt vào dự án / toàn cục.
 """
 
 import os
@@ -11,7 +11,22 @@ import shutil
 import json
 from pathlib import Path
 
-SKILL_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# Tự động tìm nguồn skill chuẩn xác
+candidate_1 = REPO_ROOT / ".agents" / "skills" / "lean-teamwork"
+candidate_2 = REPO_ROOT
+candidate_3 = Path.home() / ".agents" / "skills" / "lean-teamwork"
+
+if (candidate_1 / "SKILL.md").exists():
+    SKILL_SOURCE = candidate_1
+elif (candidate_2 / "SKILL.md").exists():
+    SKILL_SOURCE = candidate_2
+else:
+    SKILL_SOURCE = candidate_3
+
+GLOBAL_SKILL_DIR = Path.home() / ".agents" / "skills" / "lean-teamwork"
+SKILL_DIR = GLOBAL_SKILL_DIR if GLOBAL_SKILL_DIR.exists() else SKILL_SOURCE
 TEMPLATES_DIR = SKILL_DIR / "templates"
 REFERENCES_DIR = SKILL_DIR / "references"
 PATTERNS_FILE = Path.home() / ".agents" / "learned_patterns.md"
@@ -63,27 +78,35 @@ def verify_system():
         print(f"  ❌ [3/6] Thiếu tài liệu tham chiếu: {missing_refs}")
 
     # 4. Hook Script
-    if HOOK_SCRIPT.exists() and os.access(HOOK_SCRIPT, os.X_OK):
+    hook_file = Path.home() / ".agents" / "skills" / "lean-teamwork" / "scripts" / "lean_teamwork_hook.py"
+    if not hook_file.exists():
+        hook_file = HOOK_SCRIPT
+    if hook_file.exists() and os.access(hook_file, os.X_OK):
         print("  ✓ [4/6] PreInvocation Hook Script sẵn sàng và có quyền thực thi.")
         checks_passed += 1
+    elif hook_file.exists():
+        print("  ✓ [4/6] PreInvocation Hook Script sẵn sàng (chưa cấp quyền +x).")
+        checks_passed += 1
     else:
-        print("  ❌ [4/6] Hook script không tìm thấy hoặc thiếu quyền execute!")
+        print("  ❌ [4/6] Không tìm thấy file PreInvocation Hook Script!")
 
-    # 5. Learned Patterns Store
+    # 5. External Knowledge Repository
     if PATTERNS_FILE.exists():
-        content = PATTERNS_FILE.read_text(encoding="utf-8")
-        patterns_count = content.count("## Mẫu ") + content.count("## Pattern ")
+        text = PATTERNS_FILE.read_text(encoding="utf-8")
+        patterns_count = text.count("## Mẫu ") + text.count("## Pattern ")
         print(f"  ✓ [5/6] Kho tri thức ngoài sẵn sàng ({patterns_count} patterns ghi nhận).")
         checks_passed += 1
     else:
-        print("  ❌ [5/6] Không tìm thấy ~/.agents/learned_patterns.md!")
+        print("  ⚠ [5/6] Kho tri thức ngoài chưa tồn tại.")
 
-    # 6. Global Hooks Config
+    # 6. Global Hook Registration
     hooks_json = Path.home() / ".gemini" / "config" / "hooks.json"
     if hooks_json.exists():
         try:
-            h_data = json.loads(hooks_json.read_text(encoding="utf-8"))
-            if "lean-teamwork-reanchor" in h_data:
+            cfg = json.loads(hooks_json.read_text(encoding="utf-8"))
+            hooks = cfg.get("hooks", {}).get("PreInvocation", [])
+            has_hook = any("lean_teamwork_hook.py" in str(h.get("command", "")) or h.get("name") == "lean-teamwork-reanchor" for h in hooks)
+            if has_hook:
                 print("  ✓ [6/6] Hook đã được đăng ký thành công trong ~/.gemini/config/hooks.json.")
                 checks_passed += 1
             else:
@@ -106,12 +129,9 @@ def prune_patterns():
     text = PATTERNS_FILE.read_text(encoding="utf-8")
     blocks = []
     current_block = []
-    header = ""
 
     for line in text.splitlines():
-        if line.startswith("# Kho Tri Thức"):
-            header = line
-        elif line.startswith("## Mẫu "):
+        if line.startswith("## Mẫu ") or line.startswith("## Pattern "):
             if current_block:
                 blocks.append("\n".join(current_block))
             current_block = [line]
@@ -121,7 +141,6 @@ def prune_patterns():
         blocks.append("\n".join(current_block))
 
     print(f"[PRUNE] Tìm thấy {len(blocks)} blocks tri thức.")
-    # Khóa trần 10 patterns mới nhất
     trimmed = blocks[:10]
     out = (
         "# Kho Tri Thức & Các Mẫu Đúc Kết Tinh Gọn (Learned Patterns)\n\n"
@@ -132,6 +151,46 @@ def prune_patterns():
     )
     PATTERNS_FILE.write_text(out, encoding="utf-8")
     print(f"[SUCCESS] Đã tối ưu hóa kho tri thức, duy trì đúng {len(trimmed)} patterns tinh hoa.")
+
+def install_global():
+    print("[INSTALL] Đang cài đặt Lean Teamwork Protocol lên máy tính...")
+    GLOBAL_SKILL_DIR.parent.mkdir(parents=True, exist_ok=True)
+    if SKILL_SOURCE.exists() and SKILL_SOURCE != GLOBAL_SKILL_DIR:
+        shutil.copytree(SKILL_SOURCE, GLOBAL_SKILL_DIR, dirs_exist_ok=True)
+        print("  ✓ Đã nạp skill vào ~/.agents/skills/lean-teamwork")
+    
+    # Kho tri thức
+    src_patterns = REPO_ROOT / "docs" / "learned_patterns.md"
+    if src_patterns.exists() and not PATTERNS_FILE.exists():
+        PATTERNS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src_patterns, PATTERNS_FILE)
+        print("  ✓ Đã khởi tạo kho tri thức tại ~/.agents/learned_patterns.md")
+
+    # Đăng ký hook
+    hooks_file = Path.home() / ".gemini" / "config" / "hooks.json"
+    hooks_file.parent.mkdir(parents=True, exist_ok=True)
+    hook_script = GLOBAL_SKILL_DIR / "scripts" / "lean_teamwork_hook.py"
+    if not hook_script.exists():
+        hook_script = REPO_ROOT / "scripts" / "lean_teamwork_hook.py"
+
+    if hook_script.exists():
+        os.chmod(hook_script, 0o755)
+
+    hook_config = {
+        "hooks": {
+            "PreInvocation": [
+                {
+                    "name": "lean-teamwork-reanchor",
+                    "description": "Tự động tiêm thông điệp Re-Anchor tàng hình trước mỗi lượt gọi model",
+                    "command": f"python3 {hook_script}"
+                }
+            ]
+        }
+    }
+    hooks_file.write_text(json.dumps(hook_config, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("  ✓ Đã kích hoạt PreInvocation Hook trong ~/.gemini/config/hooks.json")
+    print("-" * 60)
+    return verify_system()
 
 def install_to(project_path: str):
     p = Path(project_path).resolve()
@@ -150,6 +209,9 @@ if __name__ == "__main__":
         sys.exit(0 if success else 1)
     elif "--prune" in sys.argv:
         prune_patterns()
+    elif "--install" in sys.argv:
+        success = install_global()
+        sys.exit(0 if success else 1)
     elif "--install-to" in sys.argv:
         idx = sys.argv.index("--install-to")
         if len(sys.argv) > idx + 1:
@@ -157,4 +219,6 @@ if __name__ == "__main__":
         else:
             print("Cần cung cấp đường dẫn: --install-to <path>")
     else:
-        verify_system()
+        # Mặc định: cài đặt và kiểm thử
+        success = install_global()
+        sys.exit(0 if success else 1)
