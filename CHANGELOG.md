@@ -2,7 +2,21 @@
 
 Tất cả các thay đổi, bài học và tính năng nâng cấp qua từng phiên bản.
 
-## [1.5.15] — 2026-09-14
+## [1.6.0] — 2026-10-04
+### Added & Architecture (Pure CLI Two-Phase Edition & Zero Blind Decisions)
+- **Kỷ Luật Minh Bạch Gợi Ý (Proposal Gate — Bảng 5 Cột)**:
+  - Bắt buộc in Bảng Ma Trận Phân Tích Chi Tiết gồm 5 cột (`Phương Án`, `Cơ Chế Hoạt Động`, `Ưu Điểm`, `Nhược Điểm & Đánh Đổi`, `Rủi Ro & Lý Do Khuyến Nghị`) ngay trong lịch sử chat dòng lệnh trước khi người dùng đưa ra quyết định.
+  - Triệt tiêu 100% hiện tượng Blind Decisions (người dùng bị hỏi cộc lốc mà không có thông tin chi tiết).
+- **Kỷ Luật Minh Bạch Nghiệm Thu (Acceptance Gate — Twin-Table Architecture)**:
+  - Bắt buộc in đủ 2 bảng: (1) Bảng Ma Trận Đối Chứng Thực Nghiệm (Lệnh Test, Exit Code 0, Rủi Ro Còn Lại) và (2) Bảng Giải Nghĩa Chi Tiết 2 Lựa Chọn (`[100% HOÀN TẤT]` vs `[SUPERPOWERS DEBUG]`).
+  - Cấm tuyệt đối mở popup cộc lốc gây mất ngữ cảnh kiểm thử.
+- **Đối Chứng Trực Quan Tức Thì (Instant Visual Feedback)**:
+  - Khi sinh ảnh screenshot nghiệm thu (UI/Web/E2E), tự động chạy ngầm `/usr/bin/eog <ảnh> &` để bật ảnh lên cho người dùng xem ngay trên desktop.
+- **Nhận Diện Phiên Siêu Tốc (Session & Quota Awareness)**:
+  - PreInvocation Hook tự động đọc Model đang hoạt động và Account active từ `google_accounts.json` và `cli.log` với độ trễ < 5ms.
+- **Tự Tiến Hóa & Kho Tri Thức (Pattern 11)**:
+  - Bổ sung Pattern 11 vào `docs/learned_patterns.md` đúc kết trọn vẹn chu trình Tự Vấn 6 Chiều về kiến trúc Pure CLI Two-Phase.
+
 ### Fixed & Architecture (Zero-Block Chat & Widget Decoupling)
 - **Khử Bỏ Hoàn Toàn Modal Popup `ask_question` Trong Khung Chat Antigravity**:
   - Triệt tiêu 100% việc gọi công cụ chặn cứng `ask_question` cho đề xuất kỹ thuật và nghiệm thu. Khung chat rảnh rang, không che chữ, không bị popup đóng băng giao diện.
