@@ -2,6 +2,17 @@
 
 Tất cả các thay đổi, bài học và tính năng nâng cấp qua từng phiên bản.
 
+## [1.7.0] — 2026-10-05
+### Added & Governance (Enforce CLI Presentation Before Decision & Two-Phase Workflow)
+- **Quy Trình 2 Nhịp Bắt Buộc (Two-Phase Workflow Enforcement)**:
+  - **Nhịp 1 (Trình Bày Trực Tiếp Ra CLI)**: Bắt buộc xuất toàn bộ bài phân tích chuyên sâu (Root Cause, Bảng Ma Trận 5 Cột, Đánh Đổi, Rủi Ro) trực tiếp dưới dạng văn bản Markdown ra màn hình CLI trước khi người dùng đưa ra quyết định.
+  - **Cấm Tuyệt Đối Gọi `ask_question` Ở Nhịp 1**: Nghiêm cấm việc gọi tool `ask_question` trong cùng lượt hoặc khi chưa in bài phân tích chi tiết ra màn hình CLI. Triệt tiêu hoàn toàn vấn đề hỏi cộc lốc hoặc chỉ liệt kê vài gạch đầu dòng vắn tắt trong modal khiến người dùng không đủ cơ sở để lựa chọn.
+  - **Nhịp 2 (Cổng Lựa Chọn & Hẹn Giờ Tự Quyết)**: Sau khi nội dung phân tích đã hiển thị đầy đủ trên màn hình CLI, mới mở cổng lựa chọn phương án kèm tùy chọn `(Recommended)` và đặt hẹn giờ `schedule` 150s tự quyết nếu vắng mặt.
+- **Minh Bạch Nghiệm Thu Đủ 2 Bảng Trước Modal (Twin-Table CLI Verification)**:
+  - Khẳng định và chuẩn hóa quy tắc: BẮT BUỘC in đủ 2 bảng (Bảng Ma Trận Đối Chứng Thực Nghiệm và Bảng Giải Nghĩa Chi Tiết 2 Lựa Chọn) ra màn hình CLI bằng Markdown trước khi mở modal nghiệm thu `ask_question`.
+- **Đồng Bộ Hoàn Thiện Tầng Skill & PreInvocation Hook**:
+  - Cập nhật và đồng bộ đồng thời `SKILL.md` (giới hạn nghiêm ngặt < 150 dòng) và PreInvocation Hook re-anchor toàn hệ thống.
+
 ## [1.6.0] — 2026-10-04
 ### Added & Architecture (Pure CLI Two-Phase Edition & Zero Blind Decisions)
 - **Kỷ Luật Minh Bạch Gợi Ý (Proposal Gate — Bảng 5 Cột)**:

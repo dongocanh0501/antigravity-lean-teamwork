@@ -58,26 +58,27 @@ Mọi agent và phiên làm việc kích hoạt skill này bắt buộc phải t
 
 ## 3. Quy Trình 2 Cổng Native Modal Trên Antigravity CLI (Pure CLI Two-Phase)
 
-### 1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT & MINH BẠCH GỢI Ý] (Pure CLI Two-Phase)
+### 1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT & TRÌNH BÀY PHƯƠNG ÁN TRÊN CLI] (Two-Phase Workflow)
 - **Khi nào kích hoạt**: Khi vừa nhận yêu cầu mới, phân tích hướng đi, hoặc đứng trước các ngã rẽ kỹ thuật quan trọng.
 - **Quy chuẩn 2 nhịp bắt buộc**:
-  1. **NHỊP 1 (XUẤT MA TRẬN PHÂN TÍCH ĐẦY ĐỦ)**:
-     - TRƯỚC KHI mở cổng hỏi, AI BẮT BUỘC phải in ra Bảng Ma Trận So Sánh Đầy Đủ gồm 5 cột:
+  1. **NHỊP 1 (XUẤT TOÀN BỘ BÀI PHÂN TÍCH & MA TRẬN 5 CỘT RA CLI)**:
+     - AI BẮT BUỘC xuất toàn bộ bài phân tích kỹ thuật và Bảng Ma Trận So Sánh Đầy Đủ gồm 5 cột trực tiếp ra màn hình CLI bằng Markdown:
        `| Phương Án | Cơ Chế Hoạt Động | Ưu Điểm | Nhược Điểm & Đánh Đổi | Rủi Ro & Lý Do Đề Xuất |`
-     - CẤM TUYỆT ĐỐI hỏi cộc lốc hoặc chỉ ghi tên option vắn tắt mà không trình bày chi tiết!
      - Phương án tối ưu nhất bắt buộc đánh dấu tiền tố `(Recommended)`.
-  2. **NHỊP 2 (CỔNG LỰA CHỌN & HẸN GIỜ TỰ QUYẾT)**:
-     - Mở công cụ `ask_question` để người dùng chọn, kết hợp `schedule` (150s) tự quyết nếu người dùng vắng mặt.
+     - **CẤM TUYỆT ĐỐI**: Không được gọi tool `ask_question` trong nhịp này. Cấm hỏi cộc lốc hoặc chỉ ghi tên option vắn tắt trong modal khi chưa xuất phân tích chi tiết ra CLI.
+  2. **NHỊP 2 (CỔNG LỰA CHỌN PHƯƠNG ÁN & HẸN GIỜ TỰ QUYẾT)**:
+     - Sau khi nội dung phân tích đã hiển thị trọn vẹn trên màn hình CLI ở Nhịp 1, mới mở công cụ `ask_question` để người dùng lựa chọn phương án.
+     - Kết hợp đặt hẹn giờ `schedule(DurationSeconds=150, TimerCondition="any", Prompt="Hết thời gian 2.5 phút, tự động thi hành phương án Recommended")` tự quyết nếu người dùng vắng mặt.
 
 ### 2. 💎 [CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] (Acceptance Gate)
 - **Khi nào kích hoạt**: Khi code đã viết xong, toàn bộ kiểm thử tích hợp đạt 100% PASS (Exit Code 0).
-- **Quy trình 2 bước**:
-  - **BƯỚC 1 (In Báo Cáo & Đối Chứng)**: BẮT BUỘC in ĐỦ 2 BẢNG:
+- **Quy trình 2 nhịp bắt buộc**:
+  - **NHỊP 1 (IN ĐỦ 2 BẢNG BÁO CÁO & ĐỐI CHỨNG RA CLI)**: BẮT BUỘC in ĐỦ 2 BẢNG trực tiếp ra màn hình CLI bằng Markdown trước khi mở modal nghiệm thu:
     1. *Bảng Ma Trận Đối Chứng Thực Nghiệm* (Hạng mục, Lệnh test, Exit Code, Rủi ro, Trạng thái).
     2. *Bảng Giải Nghĩa Chi Tiết 2 Lựa Chọn Nghiệm Thu* (`[100% HOÀN TẤT]` vs `[SUPERPOWERS DEBUG]`).
     Nếu có ảnh screenshot (UI/Web preview), BẮT BUỘC chạy ngầm `/usr/bin/eog <đường_dẫn_ảnh> &` để mở ảnh trực tiếp trên màn hình!
-  - **BƯỚC 2 (Treo Cổng Nghiệm Thu Qua `ask_question`)**:
-    Hiển thị modal lựa chọn 2 trạng thái sau khi đã in đủ 2 bảng ở Bước 1. Cấm hỏi cộc lốc!
+  - **NHỊP 2 (MỞ CỔNG NGHIỆM THU QUA `ask_question`)**:
+    Chỉ mở modal `ask_question` lựa chọn 2 trạng thái sau khi đã in đủ 2 bảng chi tiết ở Nhịp 1 ra CLI. CẤM TUYỆT ĐỐI mở modal hỏi khi chưa in đối chứng ra màn hình CLI!
 
 ### 3. Chuẩn Hóa Mật Mã Nghiệm Thu (`OK 💎` / `ok::`)
 - **Tín hiệu nghiệm thu chuẩn hóa**: Chỉ kích hoạt khi nhận được mật mã **`OK 💎`** (hoặc `ok::`, `[ACCEPT] 💎`).
