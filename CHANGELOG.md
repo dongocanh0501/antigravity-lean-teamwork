@@ -2,6 +2,13 @@
 
 Tất cả các thay đổi, bài học và tính năng nâng cấp qua từng phiên bản.
 
+## [1.8.0] — 2026-10-06
+### Added & Governance (CLI-First Full Implementation Plan Presentation)
+- **Chuẩn Hóa Kế Hoạch Triển Khai Trực Tiếp Ra CLI (CLI-First Implementation Plan)**:
+  - Bắt buộc in trọn vẹn 100% Kế Hoạch Triển Khai Kỹ Thuật Chi Tiết (Full Implementation Plan) trực tiếp ra màn hình phiên làm việc CLI bằng định dạng Markdown khi người dùng yêu cầu `/plan` hoặc lập kế hoạch tính năng.
+  - Cấm tuyệt đối việc giấu kế hoạch trong file artifact `.md` nội bộ rồi chỉ đưa liên kết tóm tắt sơ sài (`👉 plan.md`).
+  - Đồng bộ 3 lớp: PreInvocation Re-Anchor Hook, Bộ Quy Tắc Global (`AGENTS.md`, `GEMINI.md`), và `SKILL.md`.
+
 ## [1.7.0] — 2026-10-05
 ### Added & Governance (Enforce CLI Presentation Before Decision & Two-Phase Workflow)
 - **Quy Trình 2 Nhịp Bắt Buộc (Two-Phase Workflow Enforcement)**:
