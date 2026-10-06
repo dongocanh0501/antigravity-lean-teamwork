@@ -58,16 +58,16 @@ Mọi agent và phiên làm việc kích hoạt skill này bắt buộc phải t
 
 ## 3. Quy Trình 2 Cổng Native Modal Trên Antigravity CLI (Pure CLI Two-Phase)
 
-### 1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT & TRÌNH BÀY PHƯƠNG ÁN TRÊN CLI] (Two-Phase Workflow)
-- **Khi nào kích hoạt**: Khi vừa nhận yêu cầu mới, phân tích hướng đi, hoặc đứng trước các ngã rẽ kỹ thuật quan trọng.
+### 1. 🧭 [CHẾ ĐỘ ĐỀ XUẤT KỸ THUẬT & KẾ HOẠCH TRIỂN KHAI TRÊN CLI (CLI-FIRST)] (Two-Phase Workflow)
+- **Khi nào kích hoạt**: Khi vừa nhận yêu cầu mới, phân tích hướng đi, lập kế hoạch (`/plan`), hoặc đứng trước các ngã rẽ kỹ thuật quan trọng.
 - **Quy chuẩn 2 nhịp bắt buộc**:
-  1. **NHỊP 1 (XUẤT TOÀN BỘ BÀI PHÂN TÍCH & MA TRẬN 5 CỘT RA CLI)**:
-     - AI BẮT BUỘC xuất toàn bộ bài phân tích kỹ thuật và Bảng Ma Trận So Sánh Đầy Đủ gồm 5 cột trực tiếp ra màn hình CLI bằng Markdown:
+  1. **NHỊP 1 (XUẤT TOÀN BỘ BÀI PHÂN TÍCH, MA TRẬN 5 CỘT & KẾ HOẠCH CHI TIẾT RA CLI)**:
+     - AI BẮT BUỘC xuất toàn bộ bài phân tích kỹ thuật, Bảng Ma Trận So Sánh 5 Cột, và **Kế Hoạch Triển Khai Chi Tiết (Full Implementation Plan)** trực tiếp ra màn hình CLI bằng Markdown:
        `| Phương Án | Cơ Chế Hoạt Động | Ưu Điểm | Nhược Điểm & Đánh Đổi | Rủi Ro & Lý Do Đề Xuất |`
      - Phương án tối ưu nhất bắt buộc đánh dấu tiền tố `(Recommended)`.
-     - **CẤM TUYỆT ĐỐI**: Không được gọi tool `ask_question` trong nhịp này. Cấm hỏi cộc lốc hoặc chỉ ghi tên option vắn tắt trong modal khi chưa xuất phân tích chi tiết ra CLI.
+     - **CẤM TUYỆT ĐỐI**: CẤM giấu kế hoạch trong file artifact `.md` rồi chỉ dẫn link tóm tắt. CẤM gọi tool `ask_question` trong nhịp này khi chưa xuất bài phân tích/kế hoạch đầy đủ ra CLI.
   2. **NHỊP 2 (CỔNG LỰA CHỌN PHƯƠNG ÁN & HẸN GIỜ TỰ QUYẾT)**:
-     - Sau khi nội dung phân tích đã hiển thị trọn vẹn trên màn hình CLI ở Nhịp 1, mới mở công cụ `ask_question` để người dùng lựa chọn phương án.
+     - Sau khi nội dung phân tích & kế hoạch đã hiển thị trọn vẹn trên màn hình CLI ở Nhịp 1, mới mở công cụ `ask_question` để người dùng lựa chọn phương án.
      - Kết hợp đặt hẹn giờ `schedule(DurationSeconds=150, TimerCondition="any", Prompt="Hết thời gian 2.5 phút, tự động thi hành phương án Recommended")` tự quyết nếu người dùng vắng mặt.
 
 ### 2. 💎 [CHẾ ĐỘ NGHIỆM THU HOÀN THIỆN] (Acceptance Gate)
